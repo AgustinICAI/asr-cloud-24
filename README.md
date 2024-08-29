@@ -76,9 +76,9 @@ terminales según OS:
 
 - Windows:
   
-    1. [Fluent Terminal](https://www.microsoft.com/es-es/p/fluent-terminal/9p2krlmfxf9t)
-    2. [Windows terminal](https://www.microsoft.com/es-es/p/windows-terminal/9n0dx20hk701?rtc=1)
-    3. [Terminus](https://tabby.sh/)
+    1. [Windows terminal](https://www.microsoft.com/es-es/p/windows-terminal/9n0dx20hk701?rtc=1)
+ 
+    2. [Como trabajar con múltiples ventanas](https://learn.microsoft.com/en-us/windows/terminal/panes)
     
 - Mac OS:
 
@@ -87,7 +87,17 @@ terminales según OS:
 - Linux:
     1. La terminal nativa + [OhMyZsh](https://ohmyz.sh/)
 
+- ZSH con OhMyZsh con WSL (Set up preferido del profe):
+```
+# Instalación zsh
+sudo apt update
+sudo apt install zsh
+# Shell por defecto zsh
+chsh -s $(which zsh)
+# Instalación OhMyZsh
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 
+```
 
 ## Siguientes pasos
 
