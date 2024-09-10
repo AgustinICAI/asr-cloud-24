@@ -45,7 +45,13 @@ terminal, tanto en Windows como en sistemas Linux.
 Por ello, lo primero que tenemos que asegurarnos es que tenemos instalado el kit de desarrollo del proveedor:
 
 - Azure: [Instrucciones de instalación en todos los OS](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
-- Google: [Instrucciones de instalación en todos los OS](https://cloud.google.com/sdk/docs/install)
+- Google: [Instrucciones de instalación en todos los OS](https://cloud.google.com/sdk/docs/install?hl=es-419#deb)
+
+Se recomienda instalar el cli, y en general en la asignatura en máquina virtual de ubuntu con WSL.
+
+```
+
+```
 
 Una vez instalados, tendremos la posibilidad de ejecutar los comandos de Cloud Shell desde 
 local. El primero y más importantes de estos comandos es la inicialización. 
@@ -61,6 +67,8 @@ forma:
 ```shell
 $ gcloud init
 ```
+
+
 
 En el caso de Google, para hacer gestión del almacenamiento de una forma programática desde
 nuestro terminal tendremos que instalarnos una librería más: `gsutil`.
