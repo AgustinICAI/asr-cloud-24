@@ -13,7 +13,7 @@ Para ello:
 
 1. Ejecutar:
     ```shell
-    $ gcloud beta compute instance-templates create asr-template-vm \
+    $ gcloud compute instance-templates create asr-template-vm \
     --machine-type=e2-medium \
     --tags=http-server,https-server \
     --create-disk=auto-delete=yes,boot=yes,image=projects/ubuntu-os-cloud/global/images/ubuntu-2204-jammy-v20230829,size=10 \
