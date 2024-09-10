@@ -29,7 +29,7 @@ Para ello:
     $ az vm create \
       --resource-group example-resource-group \
       --name my-first-vm \
-      --image Win2019Datacenter \
+      --image Win2022Datacenter \
       --public-ip-sku Standard \
       --admin-username azureuser
    ```
