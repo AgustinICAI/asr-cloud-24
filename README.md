@@ -99,11 +99,11 @@ terminales según OS:
 
         #### Instalación
         ```
-         wsl --install
+         # wsl --install
          wsl --install -d Ubuntu-24.04
-         wsl --setdefault Ubuntu-24.05
+         # wsl --setdefault Ubuntu-24.04
          # Es recomendable borrar la de por defecto antigua de ubuntu
-         wsl --unregister Ubuntu
+         # wsl --unregister Ubuntu
         ```
 
 ### fyi: WSL 2.0 
