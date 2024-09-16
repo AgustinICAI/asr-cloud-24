@@ -13,10 +13,10 @@ Para ello:
 
 1. Ejecutar:
     ```shell
-    $ gcloud beta compute instance-templates create asr-template-vm \
+    $ gcloud compute instance-templates create asr-template-vm \
     --machine-type=e2-medium \
     --tags=http-server,https-server \
-    --create-disk=auto-delete=yes,boot=yes,image=projects/ubuntu-os-cloud/global/images/ubuntu-2204-jammy-v20230829,size=10 \
+    --create-disk=auto-delete=yes,boot=yes,image=projects/ubuntu-os-cloud/global/images/ubuntu-2404-noble-amd64-v20240904,size=10 \
     --labels=practica=01 \
     --metadata-from-file=startup-script=startup-script.sh
     ```
