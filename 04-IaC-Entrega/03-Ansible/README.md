@@ -89,53 +89,56 @@ main.yml: este archivo es el playbook principal. La mayoría de las cosas se exp
   hosts: localhost
   gather_facts: no
   vars:
-      gcp_project: icai-293810 #Setear vuestro proyecto
+      gcp_project: asr-p3-2024-agl #Setear vuestro proyecto
       gcp_cred_kind: serviceaccount
-      gcp_cred_file: "/home/....../icai-293810-1ebd82e69568.json" #Aqui setear con la ruta de vuestra SA
-      region: "europe-west1"
-      zone: "europe-west1-d"
-      machine_type: "n1-standard-1"
-      image: "projects/centos-cloud/global/images/centos-7-v20230912"
+      gcp_cred_file: "/home/agus/ICAI/kk/sa.json" #Aqui setear con la ruta de vuestra SA
+      region: "europe-southwest1"
+      zone: "europe-southwest1-b"
+      machine_type: "e2-micro"
+      image: "projects/centos-cloud/global/images/centos-stream-9-v20240919"
 
   tasks:
-   - name: Create private IP address to the VM instance
-     gcp_compute_address:
-       name: "maquina-prueba-ip"
-       region: "{{ region }}"
-       project: "{{ gcp_project }}"
-       service_account_file: "{{ gcp_cred_file }}"
-       auth_kind: "{{ gcp_cred_kind }}"
-     register: gce_ip
-   - name: Bring up the instance in the zone
-     gcp_compute_instance:
-       name: "maquina-prueba"
-       machine_type: "{{ machine_type }}"
-       disks:
-         - auto_delete: true
-           boot: true
-           initialize_params:
-             source_image: "{{ image }}"
-       network_interfaces:
-         - access_configs:
-             - name: External NAT  # public IP
-               nat_ip: "{{ gce_ip }}"
-               type: ONE_TO_ONE_NAT
-       tags:
+    - name: Crear una máquina virtual en GCP
+      gcp_compute_instance:
+        auth_kind: serviceaccount
+        service_account_file: "{{ gcp_cred_file }}"
+        project: "{{ gcp_project }}"
+        zone: "{{ zone }}"
+        name: "maquina-prueba"
+        machine_type: "{{ machine_type }}"
+        disks:
+          - auto_delete: true
+            boot: true
+            initialize_params:
+              source_image: "{{ image }}"
+        network_interfaces:
+          - access_configs:
+              - name: "External NAT"
+                type: ONE_TO_ONE_NAT
+        state: present
+        tags:
          items: 
            - http-server
            - https-server
            - ssh-externo
 
-       zone: "{{ zone }}"
-       project: "{{ gcp_project }}"
-       service_account_file: "{{ gcp_cred_file }}"
-       auth_kind: "{{ gcp_cred_kind }}"
-     register: gce 
+
+    - name: Esperar hasta que la VM esté activa y obtener su información
+      gcp_compute_instance_info:
+        auth_kind: serviceaccount
+        service_account_file: "{{ gcp_cred_file }}"
+        project: "{{ gcp_project }}"
+        zone: "{{ zone }}"
+        filters: "name eq 'maquina-prueba'"
+      register: vm_info
+      until: vm_info.resources[0].status == "RUNNING"
+      retries: 10
+      delay: 15
 
   post_tasks:
     - name: Save host data
       add_host:
-        hostname: "{{ gce_ip.address }}"
+        hostname: "{{ vm_info.resources[0].networkInterfaces[0].accessConfigs[0].natIP }}"
         groups: gce_instances_ips
 
 - name: Deploy httpd and custom html page 
@@ -205,7 +208,7 @@ El paso final para resumir todo el código es ejecutar el playbook de ansible.
 $ ansible-playbook main.yml -u sa_<UID de la SA>
 
 ### Si anterior comando te falla, puede que haga falta instalar algunas librerías de python que usa ansible en esta plantilla
-python3 -m pip install --upgrade google-auth 
+sudo apt install python3-google-auth
 
 ### Si lo anterior falla, también puede ser porque es necesario confiar en los host automáticamente. Para ello es necesario modificar el fichero /etc/ansible/ansible.cfg y añadir lo siguiente
 [defaults]

@@ -6,10 +6,10 @@ provider "google" {
 
 resource "google_compute_instance" "terraform" {
   name         = "terraform"
-  machine_type = "n1-standard-1"
+  machine_type = "e2-micro"
   boot_disk {
     initialize_params {
-      image = "projects/centos-cloud/global/images/centos-7-v20220822"
+      image = "projects/centos-cloud/global/images/centos-stream-9-v20240919"
     }
   }
   network_interface {
