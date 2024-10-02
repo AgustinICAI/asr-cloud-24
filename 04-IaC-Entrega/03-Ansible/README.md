@@ -205,7 +205,7 @@ roles/simple-web/files/index.html : archivo del sitio web
 ## 4. Ejecutando el Ansible
 El paso final para resumir todo el código es ejecutar el playbook de ansible.
 ```shell
-$ ansible-playbook main.yml -u sa_<UID de la SA>
+$ ansible-playbook main.yml -u sa_<UID de la SA> --key-file /full/path/.ssh/ssh-key-ansible-sa"
 
 ### Si anterior comando te falla, puede que haga falta instalar algunas librerías de python que usa ansible en esta plantilla
 sudo apt install python3-google-auth
