@@ -42,7 +42,7 @@ gcloud auth activate-service-account --key-file=<fichero .json descargado antes>
 
 # Generamos unas claves ssh específicas para esta SA, y se las vamos a asignar a la service account
 ssh-keygen -f ~/.ssh/ssh-key-ansible-sa
-gcloud compute os-login ssh-keys add --key-file=ssh-key-ansible-sa.pub
+gcloud compute os-login ssh-keys add --key-file=/path/completo/ssh-key-ansible-sa.pub
 
 # Checkear que todo anda bien
 gcloud config list
@@ -94,7 +94,7 @@ main.yml: este archivo es el playbook principal. La mayoría de las cosas se exp
       gcp_cred_file: "/home/agus/ICAI/kk/sa.json" #Aqui setear con la ruta de vuestra SA
       region: "europe-southwest1"
       zone: "europe-southwest1-b"
-      machine_type: "e2-micro"
+      machine_type: "e2-medium"
       image: "projects/centos-cloud/global/images/centos-stream-9-v20240919"
 
   tasks:
@@ -205,7 +205,7 @@ roles/simple-web/files/index.html : archivo del sitio web
 ## 4. Ejecutando el Ansible
 El paso final para resumir todo el código es ejecutar el playbook de ansible.
 ```shell
-$ ansible-playbook main.yml -u sa_<UID de la SA>
+$ ansible-playbook main.yml -u sa_<UID de la SA> --key-file /full/path/.ssh/ssh-key-ansible-sa"
 
 ### Si anterior comando te falla, puede que haga falta instalar algunas librerías de python que usa ansible en esta plantilla
 sudo apt install python3-google-auth
