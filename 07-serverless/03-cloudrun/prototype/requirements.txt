@@ -1,6 +1,0 @@
-fastapi
-jinja2
-aiofiles
-gunicorn
-requests
-uvicorn[standard]

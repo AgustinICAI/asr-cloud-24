@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
-gcloud functions deploy urandom-generator \
+NOMBRE_FUNCION=urandom-generator
+REGION=europe-west1
+gcloud functions deploy $NOMBRE_FUNCION \
         --entry-point=get_urandom \
-        --region europe-west1 \
-        --runtime python38 \
+        --region $REGION \
+        --runtime python312 \
         --trigger-http \
-        --memory 128MB \
+        --memory 128Mi \
         --timeout 60s \
-        --allow-unauthenticated \
-        --docker-registry=artifact-registry
+        --allow-unauthenticated
+

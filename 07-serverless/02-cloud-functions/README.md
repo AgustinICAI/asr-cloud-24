@@ -60,14 +60,18 @@ El despliegue de susodicha *function* es bastante
 sencillo, como se puede comprobar en [deployment.sh](deployment.sh):
 
 ```shell
-gcloud functions deploy urandom-generator \
+
+NOMBRE_FUNCION=urandom-generator
+REGION=europe-west1
+gcloud functions deploy $NOMBRE_FUNCION \
         --entry-point=get_urandom \
-        --region europe-west1 \
-        --runtime python38 \
+        --region $REGION \
+        --runtime python312 \
         --trigger-http \
-        --memory 128MB \
+        --memory 128Mi \
         --timeout 60s \
         --allow-unauthenticated
+
 ```
 
 En el despliegue se especifica el *runtime* que 

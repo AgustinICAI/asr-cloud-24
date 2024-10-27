@@ -2,74 +2,119 @@
 
 El objetivo de este lab es la demostración de como
 podemos desplegar de manera sencilla una app en
-Google Cloud Run, orquestando todo el despliegue con 
-Google Cloud Build. Para este propósito hemos
-creado una API sencilla en Python con [FastAPI](https://fastapi.tiangolo.com/).
+Google Cloud Run
 
+## Prerrequisitos
 
-### Despliegue con cloudbuild.yaml
-
-En este ejemplo no nos vamos a centrar en la explicación 
-del código de la API en sí mismo, sino en la orquestación
-de su despliegue mediante Google Cloud Build.
-Para ello vamos a usar el manifiesto [cloudbuild.yaml](prototype/cloudbuild-prod.yaml).
-
-```yaml
-steps:
-
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['build',
-           '--tag', 'gcr.io/${_PROJECT_ID}/${_PKG}/${_STAGE}/app',
-           '--build-arg', 'STAGE=${_STAGE}',
-           '--file', 'Dockerfile', '.']
-    id: 'build: core'
-
-
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/${_PROJECT_ID}/${_PKG}/${_STAGE}/app']
-    id: 'push: app'
-
-  - name: 'gcr.io/cloud-builders/gcloud'
-    args: [
-        'run',
-        'deploy',
-        '--image=gcr.io/${_PROJECT_ID}/${_PKG}/${_STAGE}/app',
-        '--region', '${_REGION}',
-        '--platform', 'managed',
-        '--allow-unauthenticated',
-        '--min-instances', '0',
-        '--max-instances', '5',
-        '${_PKG}-api'
-    ]
-    id: 'deploy: app'
-    waitFor: ['push: app']
-
-timeout: 3600s
-
-substitutions:
-  _PROJECT_ID: YOUR_PROJECT_ID
-  _REGION: 'europe-west1'
-  _PKG: prototype
+1. Configuración de Proyecto: Crea o usa un proyecto en Google Cloud y configura el SDK para usar ese proyecto:
+```shell
+gcloud config set project [YOUR_PROJECT_ID]
 ```
 
-Con este sencillo manifiesto vamos a hacer que la applicación
-que se encuentra en la carpeta [prototype](prototype) sea
-desplegada en la nube de Google. Sin embargo, para ello necesitamos
-crear un repositorio en [Google Source Repositories](https://cloud.google.com/source-repositories).
+Habilitar APIs: Asegúrate de que las APIs de Cloud Run y Container Registry estén habilitadas:
+```shell
+gcloud services enable run.googleapis.com containerregistry.googleapis.com
+```
 
-Sigue los siguientes pasos:
-0. Crea un repositorio de código dentro del proyecto. Podemos usar por ejemplo de nombre *p7* 
-1. Habilitar el api de cloud run [activar cloud run](https://console.cloud.google.com/apis/api/run.googleapis.com/)
-2. Dar permisos a la Service Account que usa Cloud Build para desplegar Cloud Run. Esto se puede hacer desde el menú del propio cloud run.
-3. Crea un repositorio en GSR llamado `prototype`
-4. Ve a tu escritorio y copia el código de la carpeta [prototype](prototype) en esa carpeta
-5. Ejecuta el script [create_triggers.sh](prototype/create_triggers.sh):
-   ```shell
-   $ ./create_triggers.sh prod
-   ```
-6. Haz push de los cambios de la carpeta
+## Paso 1: Crear la Aplicación
+Vamos a crear un archivo de Python que servirá como nuestra aplicación para Cloud Run.
 
-Estos 4 pasos habrán ejecutado el manifiesto anterior en 
-tu proyecto de GCP, y podrás ver su evolución [aquí](https://console.cloud.google.com/cloud-build/builds).
-Si todo ha ido adecuadamente, tendrás tu API `prototype-api` en 
-tu consola de cloud run: [aquí](https://console.cloud.google.com/run).
+Crea una carpeta para el proyecto:
+
+```shell
+mkdir cloud-run-example
+cd cloud-run-example
+```
+
+Dentro de esta carpeta, crea un archivo llamado app.py con el siguiente código Python
+```python
+# app.py
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route('/')
+def hello():
+    return "¡Hola desde Cloud Run!"
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=8080)
+```
+
+## Paso 2: Crear un Dockerfile
+Cloud Run ejecuta contenedores, así que vamos a crear un archivo Dockerfile para definir la imagen de Docker de nuestra aplicación.
+
+En la misma carpeta (cloud-run-example), crea un archivo llamado Dockerfile y añade el siguiente contenido:
+
+Dockerfile
+```dockerfile
+# Dockerfile
+FROM python:3.9-slim
+
+# Establece el directorio de trabajo en /app
+WORKDIR /app
+
+# Copia los archivos necesarios
+COPY app.py ./
+
+# Instala Flask
+RUN pip install Flask
+
+# Expone el puerto 8080
+EXPOSE 8080
+
+# Comando para ejecutar la aplicación
+CMD ["python", "app.py"]
+```
+
+## Paso 3: Construir y Subir la Imagen a Google Container Registry
+Autentica Docker con Google Cloud:
+
+```shell
+gcloud auth configure-docker
+```
+
+Construye la imagen de Docker y sube la imagen a Google Container Registry (reemplaza [YOUR_PROJECT_ID] con el ID de tu proyecto):
+
+```shell
+docker build -t gcr.io/[YOUR_PROJECT_ID]/cloud-run-example .
+docker push gcr.io/[YOUR_PROJECT_ID]/cloud-run-example
+```
+
+## Paso 4: Desplegar en Cloud Run
+Ahora que la imagen está en el Container Registry, vamos a desplegarla en Cloud Run.
+
+Despliega la imagen en Cloud Run (reemplaza [YOUR_PROJECT_ID] con el ID de tu proyecto):
+
+```shell
+gcloud run deploy cloud-run-example \
+    --image gcr.io/[YOUR_PROJECT_ID]/cloud-run-example \
+    --platform managed \
+    --region europe-southwest1 \
+    --allow-unauthenticated
+```
+
+- --platform managed: Desplega en la plataforma de Cloud Run completamente gestionada.
+- --region europe-southwest1: Ubicación donde se desplegará el servicio (puedes cambiarla según prefieras).
+- --allow-unauthenticated: Permite que el servicio sea accesible públicamente.
+
+
+Cuando termine el despliegue, verás una URL en la salida del comando. Esta URL es el endpoint público de tu aplicación en Cloud Run.
+
+## Paso 5: Probar el Servicio
+Visita la URL proporcionada por Cloud Run en tu navegador, y deberías ver la respuesta ¡Hola desde Cloud Run!.
+
+## Paso 6: Limpiar Recursos (Opcional)
+Si quieres evitar costos innecesarios, elimina el servicio de Cloud Run y la imagen del Container Registry.
+
+Borra el servicio de Cloud Run:
+
+```shell
+gcloud run services delete cloud-run-example --region europe-southwest1
+```
+
+Borra la imagen de Docker del Container Registry:
+
+```shell
+gcloud container images delete gcr.io/[YOUR_PROJECT_ID]/cloud-run-example
+```
